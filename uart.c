@@ -20,9 +20,11 @@ void Init_UART()
     UART0->IBRD = 0x41;
     UART0->FBRD = 0x7;
     UART0->LCRH = UART_LCRH_WLEN_M | UART_LCRH_FEN;
+    UART0->IM = UART_IM_RXIM | UART_IM_RTIM;
 
     // RX enable and UART0 enable
     UART0->CTL = UART_CTL_TXE | UART_CTL_RXE | UART_CTL_UARTEN;
+    NVIC_EnableIRQ(UART0_IRQn);
 
 }
 
@@ -101,4 +103,17 @@ void UART_SendByte(uint8_t data)
     while(UART0->FR & UART_FR_TXFF);
     UART0->DR = data;
 
+}
+
+void UART0_IRQHandler(void)
+{
+    uint8_t pending, data;
+
+    pending = UART0->MIS;
+    UART0->ICR = pending;
+
+    if(pending & UART_IM_RXIM)
+    {
+        data = UART0->DR;
+    }
 }
